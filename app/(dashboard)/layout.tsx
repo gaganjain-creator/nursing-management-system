@@ -1,0 +1,29 @@
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { Sidebar } from "@/components/shared/Sidebar"
+import { Header } from "@/components/shared/Header"
+import type { Role } from "@prisma/client"
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  const { role, email } = session.user
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Sidebar role={role as Role} userEmail={email} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+    </div>
+  )
+}

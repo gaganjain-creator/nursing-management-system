@@ -3,5 +3,235 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+}
+
+enum Role {
+  Admin
+  Supervisor
+  Nurse
+  Management
+}
+
+enum EmploymentType {
+  FullTime
+  PartTime
+  Agency
+}
+
+enum NurseStatus {
+  Active
+  Inactive
+  PendingReview
+}
+
+enum DocumentStatus {
+  Compliant
+  ExpiringSoon
+  NonCompliant
+}
+
+enum ShiftStatus {
+  Open
+  Assigned
+  Completed
+  Cancelled
+}
+
+enum ShiftRequestType {
+  SwapRequest
+  TimeOff
+}
+
+enum RequestStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  nurseProfile     NurseProfile?
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  assignedByShifts ShiftAssignment[] @relation("AssignedByUser")
+  nurseAssignments ShiftAssignment[] @relation("NurseUser")
+  nurseAvailability NurseAvailability[]
+  nurseRequests    ShiftRequest[]    @relation("NurseUser")
+  reviewedRequests ShiftRequest[]    @relation("ReviewedByUser")
+}
+
+model NurseProfile {
+  id               String         @id @default(cuid())
+  userId           String         @unique
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  dateOfBirth      DateTime
+  phone            String
+  address          String
+  emergencyContact String
+  specialisation   String?
+  licenseNumber    String         @unique
+  employmentType   EmploymentType
+  status           NurseStatus    @default(Active)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  documents        Document[]
+  shiftAssignments ShiftAssignment[]
+  shiftRequests    ShiftRequest[]
+  availability     NurseAvailability[]
+}
+
+model DocumentType {
+  id                String     @id @default(cuid())
+  name              String     @unique
+  defaultExpiryDays Int
+  alertLeadDays     Int
+  createdAt         DateTime   @default(now())
+
+  documents         Document[]
+}
+
+model Document {
+  id             String         @id @default(cuid())
+  nurseProfileId String
+  nurseProfile   NurseProfile   @relation(fields: [nurseProfileId], references: [id], onDelete: Cascade)
+  documentTypeId String
+  documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
+  fileName       String
+  storagePath    String
+  uploadedAt     DateTime       @default(now())
+  expiryDate     DateTime?
+  status         DocumentStatus @default(Compliant)
+  updatedAt      DateTime       @updatedAt
+}
+
+model Facility {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  units     Unit[]
+}
+
+model Unit {
+  id         String   @id @default(cuid())
+  name       String
+  facilityId String
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  shifts     Shift[]
+}
+
+model ShiftType {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  defaultStartTime String
+  defaultEndTime   String
+  createdAt        DateTime @default(now())
+
+  shifts           Shift[]
+}
+
+model Shift {
+  id           String      @id @default(cuid())
+  date         DateTime
+  startTime    DateTime
+  endTime      DateTime
+  unitId       String
+  unit         Unit        @relation(fields: [unitId], references: [id])
+  shiftTypeId  String
+  shiftType    ShiftType   @relation(fields: [shiftTypeId], references: [id])
+  roleRequired Role
+  status       ShiftStatus @default(Open)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  assignments  ShiftAssignment[]
+  requests     ShiftRequest[]
+}
+
+model ShiftAssignment {
+  id           String       @id @default(cuid())
+  shiftId      String
+  shift        Shift        @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  nurseId      String
+  nurse        NurseProfile @relation(fields: [nurseId], references: [id])
+  nurseUserId  String
+  nurseUser    User         @relation("NurseUser", fields: [nurseUserId], references: [id])
+  assignedById String
+  assignedBy   User         @relation("AssignedByUser", fields: [assignedById], references: [id])
+  assignedAt   DateTime     @default(now())
+
+  @@unique([shiftId, nurseId])
+}
+
+model NurseAvailability {
+  id          String       @id @default(cuid())
+  nurseId     String
+  nurse       NurseProfile @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  nurseUserId String
+  nurseUser   User         @relation(fields: [nurseUserId], references: [id])
+  date        DateTime
+  isAvailable Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([nurseId, date])
+}
+
+model ShiftRequest {
+  id            String           @id @default(cuid())
+  nurseId       String
+  nurse         NurseProfile     @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  nurseUserId   String
+  nurseUser     User             @relation("NurseUser", fields: [nurseUserId], references: [id])
+  type          ShiftRequestType
+  shiftId       String?
+  shift         Shift?           @relation(fields: [shiftId], references: [id])
+  requestedDate DateTime?
+  reason        String
+  status        RequestStatus    @default(Pending)
+  reviewedById  String?
+  reviewedBy    User?            @relation("ReviewedByUser", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String
+  title           String
+  message         String
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  relatedEntityId String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  createdAt  DateTime @default(now())
 }
