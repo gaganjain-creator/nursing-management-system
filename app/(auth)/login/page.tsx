@@ -43,7 +43,11 @@ export default function LoginPage() {
     })
 
     if (result?.error) {
-      setServerError("Invalid email or password.")
+      if (result.error === "AccountNotActive") {
+        setServerError("Your account has been deactivated. Contact an administrator.")
+      } else {
+        setServerError("Invalid email or password.")
+      }
       return
     }
 

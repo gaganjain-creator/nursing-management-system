@@ -28,7 +28,7 @@ export default auth((req) => {
   }
 
   // Auth pages — redirect to dashboard if already logged in
-  if (path === "/login" || path === "/reset-password") {
+  if (path === "/login" || path.startsWith("/reset-password")) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(getRoleDashboard(role ?? ""), req.nextUrl))
     }

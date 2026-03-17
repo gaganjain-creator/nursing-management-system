@@ -32,8 +32,13 @@ export default function ResetPasswordPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  async function onSubmit(_data: FormValues) {
-    // TODO: implement password reset email via a configured email provider
+  async function onSubmit(data: FormValues) {
+    await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: data.email }),
+    })
+    // Always show success to avoid email enumeration
     setSubmitted(true)
   }
 
@@ -49,6 +54,7 @@ export default function ResetPasswordPage() {
         {submitted ? (
           <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
             If an account exists for that email, a reset link has been sent.
+            Check the server console for the token (dev mode).
           </p>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>

@@ -50,13 +50,14 @@ enum RequestStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   role         Role
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   nurseProfile     NurseProfile?
   notifications    Notification[]
@@ -66,6 +67,16 @@ model User {
   nurseAvailability NurseAvailability[]
   nurseRequests    ShiftRequest[]    @relation("NurseUser")
   reviewedRequests ShiftRequest[]    @relation("ReviewedByUser")
+  passwordResets   PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model NurseProfile {

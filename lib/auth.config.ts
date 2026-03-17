@@ -1,5 +1,4 @@
 import type { NextAuthConfig } from "next-auth"
-import Credentials from "next-auth/providers/credentials"
 import type { Role } from "@prisma/client"
 
 /**
@@ -12,19 +11,7 @@ export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/login",
   },
-  providers: [
-    // Provider declared here for type safety; authorize is overridden in auth.ts
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      // authorize is overridden in auth.ts; this empty fn satisfies types
-      async authorize() {
-        return null
-      },
-    }),
-  ],
+  providers: [],
   callbacks: {
     jwt({ token, user }) {
       if (user) {

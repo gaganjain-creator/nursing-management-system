@@ -47,9 +47,9 @@ const navByRole: Record<Role, NavItem[]> = {
   ],
   Nurse: [
     { label: "My Dashboard", href: "/nurse", icon: LayoutDashboard },
+    { label: "My Profile", href: "/nurse/profile", icon: UserCircle },
     { label: "My Shifts", href: "/nurse/shifts", icon: Clock },
     { label: "Availability", href: "/nurse/availability", icon: CalendarDays },
-    { label: "My Documents", href: "/nurse/documents", icon: FileText },
     { label: "Requests", href: "/nurse/requests", icon: ClipboardList },
   ],
   Management: [
