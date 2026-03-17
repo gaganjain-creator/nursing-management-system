@@ -7,7 +7,7 @@ import type { Role } from "@prisma/client"
  * The full authorize logic with Prisma lives in lib/auth.ts.
  */
 export const authConfig: NextAuthConfig = {
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 8 * 60 * 60 }, // 8 hours
   pages: {
     signIn: "/login",
   },

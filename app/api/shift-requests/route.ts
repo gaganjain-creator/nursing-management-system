@@ -93,39 +93,45 @@ export async function POST(request: Request) {
 
   const { type, shiftId, requestedDate, reason } = parsed.data
 
-  const shiftRequest = await prisma.shiftRequest.create({
-    data: {
-      nurseId: profile.id,
-      nurseUserId: session.user.id,
-      type,
-      shiftId: shiftId ?? null,
-      requestedDate: requestedDate ? new Date(requestedDate) : null,
-      reason,
-    },
+  // Request creation and supervisor notifications are atomic
+  const shiftRequest = await prisma.$transaction(async (tx) => {
+    const sr = await tx.shiftRequest.create({
+      data: {
+        nurseId: profile.id,
+        nurseUserId: session.user.id,
+        type,
+        shiftId: shiftId ?? null,
+        requestedDate: requestedDate ? new Date(requestedDate) : null,
+        reason,
+      },
+    })
+    const supervisors = await tx.user.findMany({
+      where: { role: { in: ["Admin", "Supervisor"] }, isActive: true },
+      select: { id: true },
+    })
+    await tx.notification.createMany({
+      data: supervisors.map((u) => ({
+        userId: u.id,
+        type: "SHIFT_REQUEST",
+        title: "New Shift Request",
+        message: `A nurse has submitted a ${type === "TimeOff" ? "time-off" : "swap"} request.`,
+        relatedEntityId: sr.id,
+      })),
+    })
+    return sr
   })
 
-  // Notify supervisors
-  const supervisors = await prisma.user.findMany({
-    where: { role: { in: ["Admin", "Supervisor"] }, isActive: true },
-    select: { id: true },
-  })
-  await prisma.notification.createMany({
-    data: supervisors.map((u) => ({
-      userId: u.id,
-      type: "SHIFT_REQUEST",
-      title: "New Shift Request",
-      message: `A nurse has submitted a ${type === "TimeOff" ? "time-off" : "swap"} request.`,
-      relatedEntityId: shiftRequest.id,
-    })),
-  })
-
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "CREATE",
-    entityType: "ShiftRequest",
-    entityId: shiftRequest.id,
-    newValues: { type, reason },
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entityType: "ShiftRequest",
+      entityId: shiftRequest.id,
+      newValues: { type, reason },
+    })
+  } catch (e) {
+    console.error("[audit] CREATE ShiftRequest failed:", e)
+  }
 
   return NextResponse.json(shiftRequest, { status: 201 })
 }

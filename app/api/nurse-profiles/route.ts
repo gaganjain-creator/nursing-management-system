@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url)
-  const search = searchParams.get("search") ?? ""
+  const search = (searchParams.get("search") ?? "").slice(0, 100)
   const status = searchParams.get("status") ?? ""
   const employmentType = searchParams.get("employmentType") ?? ""
   const take = Math.min(Number(searchParams.get("take") ?? 50), 50)
@@ -134,13 +134,17 @@ export async function POST(req: NextRequest) {
     })
   })
 
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "CREATE",
-    entityType: "NurseProfile",
-    entityId: profile.id,
-    newValues: { fullName, licenseNumber, employmentType, email },
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entityType: "NurseProfile",
+      entityId: profile.id,
+      newValues: { fullName, licenseNumber, employmentType, email },
+    })
+  } catch (e) {
+    console.error("[audit] CREATE NurseProfile failed:", e)
+  }
 
   return Response.json(profile, { status: 201 })
 }

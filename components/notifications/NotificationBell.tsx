@@ -19,6 +19,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
 
   const fetchNotifications = useCallback(async () => {
+    if (document.visibilityState !== "visible") return
     try {
       const res = await fetch("/api/notifications")
       if (res.ok) {
@@ -30,11 +31,15 @@ export function NotificationBell() {
     }
   }, [])
 
-  // Poll every 45 seconds
+  // Poll every 90 seconds; also fetch immediately when tab becomes visible
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 45_000)
-    return () => clearInterval(interval)
+    const interval = setInterval(fetchNotifications, 90_000)
+    document.addEventListener("visibilitychange", fetchNotifications)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener("visibilitychange", fetchNotifications)
+    }
   }, [fetchNotifications])
 
   const unread = notifications.filter((n) => !n.isRead)

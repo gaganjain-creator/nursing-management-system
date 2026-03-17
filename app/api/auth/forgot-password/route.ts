@@ -8,19 +8,22 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // Always return the same response regardless of email validity or existence
+  // to prevent both email enumeration and timing attacks.
+  const GENERIC_RESPONSE = Response.json({ message: "If an account exists, a reset link was sent." })
+
   const body = await req.json()
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return Response.json({ error: "Invalid email", code: "VALIDATION_ERROR" }, { status: 400 })
+    return GENERIC_RESPONSE
   }
 
   const { email } = parsed.data
 
   const user = await prisma.user.findUnique({ where: { email } })
 
-  // Always respond the same — avoid email enumeration
   if (!user || !user.isActive) {
-    return Response.json({ message: "If an account exists, a reset link was sent." })
+    return GENERIC_RESPONSE
   }
 
   // Delete any existing tokens for this user
@@ -36,5 +39,5 @@ export async function POST(req: NextRequest) {
   // TODO: send resetUrl via email provider
   // const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/reset-password/${token}`
 
-  return Response.json({ message: "If an account exists, a reset link was sent." })
+  return GENERIC_RESPONSE
 }

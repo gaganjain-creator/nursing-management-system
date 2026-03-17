@@ -11,17 +11,34 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url)
-  const from = searchParams.get("from")
-  const to = searchParams.get("to")
+  const fromParam = searchParams.get("from")
+  const toParam = searchParams.get("to")
   const status = searchParams.get("status")
   const unitId = searchParams.get("unitId")
   const take = Math.min(Number(searchParams.get("take") ?? 50), 50)
   const skip = Math.max(Number(searchParams.get("skip") ?? 0), 0)
 
+  const dateSchema = z.coerce.date()
+  const fromParsed = fromParam ? dateSchema.safeParse(fromParam) : null
+  const toParsed = toParam ? dateSchema.safeParse(toParam) : null
+
+  if (fromParsed && !fromParsed.success) {
+    return NextResponse.json({ error: "Invalid 'from' date", code: "VALIDATION_ERROR" }, { status: 400 })
+  }
+  if (toParsed && !toParsed.success) {
+    return NextResponse.json({ error: "Invalid 'to' date", code: "VALIDATION_ERROR" }, { status: 400 })
+  }
+  if (fromParsed?.success && toParsed?.success && fromParsed.data > toParsed.data) {
+    return NextResponse.json({ error: "'from' must be before 'to'", code: "VALIDATION_ERROR" }, { status: 400 })
+  }
+
+  const from = fromParsed?.success ? fromParsed.data : null
+  const to = toParsed?.success ? toParsed.data : null
+
   const shifts = await prisma.shift.findMany({
     where: {
-      ...(from ? { date: { gte: new Date(from) } } : {}),
-      ...(to ? { date: { lte: new Date(to) } } : {}),
+      ...(from ? { date: { gte: from } } : {}),
+      ...(to ? { date: { lte: to } } : {}),
       ...(status ? { status: status as "Open" | "Assigned" | "Completed" | "Cancelled" } : {}),
       ...(unitId ? { unitId } : {}),
     },
@@ -88,13 +105,17 @@ export async function POST(request: Request) {
     },
   })
 
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "CREATE",
-    entityType: "Shift",
-    entityId: shift.id,
-    newValues: parsed.data,
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entityType: "Shift",
+      entityId: shift.id,
+      newValues: parsed.data,
+    })
+  } catch (e) {
+    console.error("[audit] CREATE Shift failed:", e)
+  }
 
   return NextResponse.json(shift, { status: 201 })
 }

@@ -63,35 +63,40 @@ export async function POST(
     return NextResponse.json({ error: "Nurse already assigned to this shift", code: "ALREADY_ASSIGNED" }, { status: 409 })
   }
 
-  const assignment = await prisma.shiftAssignment.create({
-    data: {
-      shiftId: id,
-      nurseId: nurseProfile.id,
-      nurseUserId: nurseProfile.userId,
-      assignedById: session.user.id,
-    },
+  // Assignment, shift status update, and nurse notification are atomic
+  const assignment = await prisma.$transaction(async (tx) => {
+    const a = await tx.shiftAssignment.create({
+      data: {
+        shiftId: id,
+        nurseId: nurseProfile.id,
+        nurseUserId: nurseProfile.userId,
+        assignedById: session.user.id,
+      },
+    })
+    await tx.shift.update({ where: { id }, data: { status: "Assigned" } })
+    await tx.notification.create({
+      data: {
+        userId: nurseProfile.userId,
+        type: "SHIFT_ASSIGNED",
+        title: "New Shift Assigned",
+        message: `You have been assigned a shift on ${shift.date.toLocaleDateString("en-AU")}.`,
+        relatedEntityId: id,
+      },
+    })
+    return a
   })
 
-  await prisma.shift.update({ where: { id }, data: { status: "Assigned" } })
-
-  // Notify the nurse
-  await prisma.notification.create({
-    data: {
-      userId: nurseProfile.userId,
-      type: "SHIFT_ASSIGNED",
-      title: "New Shift Assigned",
-      message: `You have been assigned a shift on ${shift.date.toLocaleDateString("en-AU")}.`,
-      relatedEntityId: id,
-    },
-  })
-
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "ASSIGN",
-    entityType: "Shift",
-    entityId: id,
-    newValues: { nurseId: nurseProfile.id },
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "ASSIGN",
+      entityType: "Shift",
+      entityId: id,
+      newValues: { nurseId: nurseProfile.id },
+    })
+  } catch (e) {
+    console.error("[audit] ASSIGN Shift failed:", e)
+  }
 
   return NextResponse.json(assignment, { status: 201 })
 }
@@ -126,13 +131,17 @@ export async function DELETE(
     await prisma.shift.update({ where: { id }, data: { status: "Open" } })
   }
 
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "UNASSIGN",
-    entityType: "Shift",
-    entityId: id,
-    oldValues: { nurseId: nurseProfileId },
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "UNASSIGN",
+      entityType: "Shift",
+      entityId: id,
+      oldValues: { nurseId: nurseProfileId },
+    })
+  } catch (e) {
+    console.error("[audit] UNASSIGN Shift failed:", e)
+  }
 
   return NextResponse.json({ ok: true })
 }

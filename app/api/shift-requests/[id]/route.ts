@@ -41,35 +41,41 @@ export async function PATCH(
 
   const { status, notes } = parsed.data
 
-  const updated = await prisma.shiftRequest.update({
-    where: { id },
-    data: {
-      status,
-      notes: notes ?? null,
-      reviewedById: session.user.id,
-      reviewedAt: new Date(),
-    },
+  // Review update and nurse notification are atomic
+  const updated = await prisma.$transaction(async (tx) => {
+    const u = await tx.shiftRequest.update({
+      where: { id },
+      data: {
+        status,
+        notes: notes ?? null,
+        reviewedById: session.user.id,
+        reviewedAt: new Date(),
+      },
+    })
+    await tx.notification.create({
+      data: {
+        userId: existing.nurse.userId,
+        type: "REQUEST_REVIEWED",
+        title: `Request ${status}`,
+        message: `Your ${existing.type === "TimeOff" ? "time-off" : "swap"} request has been ${status.toLowerCase()}.${notes ? ` Note: ${notes}` : ""}`,
+        relatedEntityId: id,
+      },
+    })
+    return u
   })
 
-  // Notify the nurse
-  await prisma.notification.create({
-    data: {
-      userId: existing.nurse.userId,
-      type: "REQUEST_REVIEWED",
-      title: `Request ${status}`,
-      message: `Your ${existing.type === "TimeOff" ? "time-off" : "swap"} request has been ${status.toLowerCase()}.${notes ? ` Note: ${notes}` : ""}`,
-      relatedEntityId: id,
-    },
-  })
-
-  await writeAuditLog({
-    userId: session.user.id,
-    action: "REVIEW",
-    entityType: "ShiftRequest",
-    entityId: id,
-    oldValues: { status: existing.status },
-    newValues: { status, notes },
-  })
+  try {
+    await writeAuditLog({
+      userId: session.user.id,
+      action: "REVIEW",
+      entityType: "ShiftRequest",
+      entityId: id,
+      oldValues: { status: existing.status },
+      newValues: { status, notes },
+    })
+  } catch (e) {
+    console.error("[audit] REVIEW ShiftRequest failed:", e)
+  }
 
   return NextResponse.json(updated)
 }
