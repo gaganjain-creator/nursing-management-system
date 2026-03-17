@@ -1,0 +1,91 @@
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server"
+import { z } from "zod"
+import { writeAuditLog } from "@/lib/audit"
+
+export async function GET(request: Request) {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const from = searchParams.get("from")
+  const to = searchParams.get("to")
+  const status = searchParams.get("status")
+  const unitId = searchParams.get("unitId")
+
+  const shifts = await prisma.shift.findMany({
+    where: {
+      ...(from ? { date: { gte: new Date(from) } } : {}),
+      ...(to ? { date: { lte: new Date(to) } } : {}),
+      ...(status ? { status: status as "Open" | "Assigned" | "Completed" | "Cancelled" } : {}),
+      ...(unitId ? { unitId } : {}),
+    },
+    include: {
+      unit: { include: { facility: true } },
+      shiftType: true,
+      assignments: {
+        include: {
+          nurse: { select: { fullName: true } },
+        },
+      },
+    },
+    orderBy: [{ date: "asc" }, { startTime: "asc" }],
+  })
+
+  return NextResponse.json(shifts)
+}
+
+const createShiftSchema = z.object({
+  date: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  unitId: z.string(),
+  shiftTypeId: z.string(),
+  roleRequired: z.enum(["Admin", "Supervisor", "Nurse", "Management"]),
+})
+
+export async function POST(request: Request) {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 })
+  }
+  if (session.user.role !== "Admin" && session.user.role !== "Supervisor") {
+    return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 })
+  }
+
+  const body: unknown = await request.json()
+  const parsed = createShiftSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input", code: "VALIDATION_ERROR" }, { status: 400 })
+  }
+
+  const { date, startTime, endTime, unitId, shiftTypeId, roleRequired } = parsed.data
+
+  const shift = await prisma.shift.create({
+    data: {
+      date: new Date(date),
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
+      unitId,
+      shiftTypeId,
+      roleRequired,
+    },
+    include: {
+      unit: { include: { facility: true } },
+      shiftType: true,
+    },
+  })
+
+  await writeAuditLog({
+    userId: session.user.id,
+    action: "CREATE",
+    entityType: "Shift",
+    entityId: shift.id,
+    newValues: parsed.data,
+  })
+
+  return NextResponse.json(shift, { status: 201 })
+}

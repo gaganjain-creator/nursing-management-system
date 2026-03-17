@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, UserCircle, ShieldCheck, CalendarDays } from "lucide-react"
+import { ComplianceWidget } from "@/components/compliance/ComplianceWidget"
 
 export default async function AdminDashboardPage() {
   const session = await auth()
@@ -67,6 +68,8 @@ export default async function AdminDashboardPage() {
           )
         })}
       </div>
+
+      <ComplianceWidget compliancePath="/admin/compliance" />
     </div>
   )
 }

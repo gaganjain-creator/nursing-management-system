@@ -55,12 +55,13 @@ export default async function NurseDashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight">
           Welcome, {nurseProfile.fullName}
         </h1>
-        <p className="text-muted-foreground">
-          {nurseProfile.specialisation ?? nurseProfile.employmentType} ·{" "}
+        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+          <span>{nurseProfile.specialisation ?? nurseProfile.employmentType}</span>
+          <span>·</span>
           <Badge variant={nurseProfile.status === "Active" ? "success" : "secondary"}>
             {nurseProfile.status}
           </Badge>
-        </p>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
