@@ -39,6 +39,16 @@ export async function PATCH(
     return Response.json({ error: "User not found", code: "NOT_FOUND" }, { status: 404 })
   }
 
+  // Prevent admins from modifying their own account
+  if (id === session.user.id) {
+    return Response.json({ error: "Cannot modify your own account", code: "FORBIDDEN" }, { status: 403 })
+  }
+
+  // Only an existing Admin account can be promoted to Admin
+  if (parsed.data.role === "Admin" && existing.role !== "Admin") {
+    return Response.json({ error: "Cannot promote a non-Admin user to Admin", code: "FORBIDDEN" }, { status: 403 })
+  }
+
   const updated = await prisma.user.update({
     where: { id },
     data: parsed.data,

@@ -33,12 +33,14 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(password, 12)
 
+  // Delete token first so it cannot be reused, even if the update fails.
+  // Both operations are atomic — if either throws, both are rolled back.
   await prisma.$transaction([
+    prisma.passwordResetToken.delete({ where: { id: resetToken.id } }),
     prisma.user.update({
       where: { id: resetToken.userId },
       data: { passwordHash },
     }),
-    prisma.passwordResetToken.delete({ where: { id: resetToken.id } }),
   ])
 
   return Response.json({ message: "Password updated successfully." })

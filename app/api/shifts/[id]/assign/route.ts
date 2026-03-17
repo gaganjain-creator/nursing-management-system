@@ -42,6 +42,19 @@ export async function POST(
     return NextResponse.json({ error: "Nurse profile not found", code: "NOT_FOUND" }, { status: 404 })
   }
 
+  // Check nurse availability for the shift date
+  const shiftDate = new Date(shift.date)
+  shiftDate.setHours(0, 0, 0, 0)
+  const availability = await prisma.nurseAvailability.findUnique({
+    where: { nurseId_date: { nurseId: nurseProfile.id, date: shiftDate } },
+  })
+  if (availability && !availability.isAvailable) {
+    return NextResponse.json(
+      { error: "Nurse is marked unavailable on this date", code: "NURSE_UNAVAILABLE" },
+      { status: 403 }
+    )
+  }
+
   // Check for existing assignment
   const existing = await prisma.shiftAssignment.findUnique({
     where: { shiftId_nurseId: { shiftId: id, nurseId: parsed.data.nurseProfileId } },

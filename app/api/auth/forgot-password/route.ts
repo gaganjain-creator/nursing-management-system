@@ -33,9 +33,8 @@ export async function POST(req: NextRequest) {
     data: { userId: user.id, token, expiresAt },
   })
 
-  const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/reset-password/${token}`
-  console.log(`[password-reset] token for ${email}: ${token}`)
-  console.log(`[password-reset] reset URL: ${resetUrl}`)
+  // TODO: send resetUrl via email provider
+  // const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/reset-password/${token}`
 
   return Response.json({ message: "If an account exists, a reset link was sent." })
 }
