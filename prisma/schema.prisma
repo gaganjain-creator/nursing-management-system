@@ -99,6 +99,8 @@ model NurseProfile {
   shiftAssignments ShiftAssignment[]
   shiftRequests    ShiftRequest[]
   availability     NurseAvailability[]
+
+  @@index([status])
 }
 
 model DocumentType {
@@ -123,6 +125,8 @@ model Document {
   expiryDate     DateTime?
   status         DocumentStatus @default(Compliant)
   updatedAt      DateTime       @updatedAt
+
+  @@index([nurseProfileId, status])
 }
 
 model Facility {
@@ -172,6 +176,8 @@ model Shift {
 
   assignments  ShiftAssignment[]
   requests     ShiftRequest[]
+
+  @@index([status, date])
 }
 
 model ShiftAssignment {
@@ -221,6 +227,8 @@ model ShiftRequest {
   notes         String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  @@index([status, nurseId])
 }
 
 model Notification {
@@ -233,6 +241,8 @@ model Notification {
   isRead          Boolean  @default(false)
   createdAt       DateTime @default(now())
   relatedEntityId String?
+
+  @@index([userId, isRead])
 }
 
 model AuditLog {
@@ -245,4 +255,7 @@ model AuditLog {
   oldValues  Json?
   newValues  Json?
   createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, createdAt])
 }

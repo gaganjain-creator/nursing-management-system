@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get("search") ?? ""
   const status = searchParams.get("status") ?? ""
   const employmentType = searchParams.get("employmentType") ?? ""
+  const take = Math.min(Number(searchParams.get("take") ?? 50), 50)
+  const skip = Math.max(Number(searchParams.get("skip") ?? 0), 0)
 
   const profiles = await prisma.nurseProfile.findMany({
     where: {
@@ -64,6 +66,8 @@ export async function GET(req: NextRequest) {
       user: { select: { email: true } },
     },
     orderBy: { createdAt: "desc" },
+    take,
+    skip,
   })
 
   return Response.json(profiles)
@@ -110,6 +114,10 @@ export async function POST(req: NextRequest) {
     const user = await tx.user.create({
       data: { email, passwordHash, role: "Nurse" },
     })
+    // Defensive: a NurseProfile must only be linked to a Nurse-role account
+    if (user.role !== "Nurse") {
+      throw new Error("USER_ROLE_MISMATCH")
+    }
     return tx.nurseProfile.create({
       data: {
         userId: user.id,

@@ -12,6 +12,8 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const status = searchParams.get("status")
+  const take = Math.min(Number(searchParams.get("take") ?? 50), 50)
+  const skip = Math.max(Number(searchParams.get("skip") ?? 0), 0)
 
   if (session.user.role === "Nurse") {
     const profile = await prisma.nurseProfile.findUnique({
@@ -31,6 +33,8 @@ export async function GET(request: Request) {
         shift: { include: { unit: { include: { facility: true } }, shiftType: true } },
       },
       orderBy: { createdAt: "desc" },
+      take,
+      skip,
     })
     return NextResponse.json(requests)
   }
@@ -50,6 +54,8 @@ export async function GET(request: Request) {
       reviewedBy: { select: { email: true } },
     },
     orderBy: { createdAt: "desc" },
+    take,
+    skip,
   })
 
   return NextResponse.json(requests)

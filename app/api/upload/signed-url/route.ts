@@ -3,10 +3,21 @@ import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { getSupabaseServer, DOCUMENTS_BUCKET } from "@/lib/supabase"
 
+const ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"] as const
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
 const schema = z.object({
   fileName: z.string().min(1),
   nurseProfileId: z.string().min(1),
   documentTypeId: z.string().min(1),
+  contentType: z.enum(ALLOWED_MIME_TYPES, {
+    errorMap: () => ({ message: "Only PDF, JPEG, and PNG files are allowed" }),
+  }),
+  fileSize: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_FILE_SIZE, "File size must not exceed 10 MB"),
 })
 
 export async function POST(req: NextRequest) {

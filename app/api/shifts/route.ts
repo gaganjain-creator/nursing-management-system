@@ -15,6 +15,8 @@ export async function GET(request: Request) {
   const to = searchParams.get("to")
   const status = searchParams.get("status")
   const unitId = searchParams.get("unitId")
+  const take = Math.min(Number(searchParams.get("take") ?? 50), 50)
+  const skip = Math.max(Number(searchParams.get("skip") ?? 0), 0)
 
   const shifts = await prisma.shift.findMany({
     where: {
@@ -33,19 +35,26 @@ export async function GET(request: Request) {
       },
     },
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
+    take,
+    skip,
   })
 
   return NextResponse.json(shifts)
 }
 
-const createShiftSchema = z.object({
-  date: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
-  unitId: z.string(),
-  shiftTypeId: z.string(),
-  roleRequired: z.enum(["Admin", "Supervisor", "Nurse", "Management"]),
-})
+const createShiftSchema = z
+  .object({
+    date: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
+    unitId: z.string(),
+    shiftTypeId: z.string(),
+    roleRequired: z.enum(["Admin", "Supervisor", "Nurse", "Management"]),
+  })
+  .refine((d) => new Date(d.startTime) < new Date(d.endTime), {
+    message: "End time must be after start time",
+    path: ["endTime"],
+  })
 
 export async function POST(request: Request) {
   const session = await auth()
