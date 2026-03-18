@@ -4,82 +4,73 @@ import { authConfig } from "./lib/auth.config"
 
 const { auth } = NextAuth(authConfig)
 
-function getRoleDashboard(role: string): string {
+function getRoleDashboard(role?: string) {
   const map: Record<string, string> = {
     Admin: "/admin",
     Supervisor: "/supervisor",
     Nurse: "/nurse",
     Management: "/management",
   }
-  return map[role] ?? "/login"
+
+  return map[role ?? ""] ?? "/login"
 }
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth
-  const role = req.auth?.user?.role as string | undefined
-  const path = req.nextUrl.pathname
+  const pathname = req.nextUrl.pathname
+
+  const session = req.auth
+  const isLoggedIn = !!session
+  const role = session?.user?.role
 
   // Root redirect
-  if (path === "/") {
+  if (pathname === "/") {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", req.nextUrl))
+      return NextResponse.redirect(new URL("/login", req.url))
     }
 
-    return NextResponse.redirect(
-      new URL(getRoleDashboard(role ?? ""), req.nextUrl)
-    )
+    return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
-  // Auth pages
-  if (path === "/login" || path.startsWith("/reset-password")) {
+  // Login / reset pages
+  if (pathname.startsWith("/login") || pathname.startsWith("/reset-password")) {
     if (isLoggedIn) {
-      return NextResponse.redirect(
-        new URL(getRoleDashboard(role ?? ""), req.nextUrl)
-      )
+      return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
     }
+
     return NextResponse.next()
   }
 
-  // Require login
+  // Protected routes
   if (!isLoggedIn) {
-    const loginUrl = new URL("/login", req.nextUrl)
-    loginUrl.searchParams.set("callbackUrl", path)
+    const loginUrl = new URL("/login", req.url)
+    loginUrl.searchParams.set("callbackUrl", pathname)
+
     return NextResponse.redirect(loginUrl)
   }
 
-  const currentRole = role ?? ""
-
   // Role guards
-  if (path.startsWith("/admin") && currentRole !== "Admin") {
-    return NextResponse.redirect(
-      new URL(getRoleDashboard(currentRole), req.nextUrl)
-    )
+  if (pathname.startsWith("/admin") && role !== "Admin") {
+    return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
   if (
-    path.startsWith("/supervisor") &&
-    currentRole !== "Supervisor" &&
-    currentRole !== "Admin"
+    pathname.startsWith("/supervisor") &&
+    role !== "Supervisor" &&
+    role !== "Admin"
   ) {
-    return NextResponse.redirect(
-      new URL(getRoleDashboard(currentRole), req.nextUrl)
-    )
+    return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
-  if (path.startsWith("/nurse") && currentRole !== "Nurse") {
-    return NextResponse.redirect(
-      new URL(getRoleDashboard(currentRole), req.nextUrl)
-    )
+  if (pathname.startsWith("/nurse") && role !== "Nurse") {
+    return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
   if (
-    path.startsWith("/management") &&
-    currentRole !== "Management" &&
-    currentRole !== "Admin"
+    pathname.startsWith("/management") &&
+    role !== "Management" &&
+    role !== "Admin"
   ) {
-    return NextResponse.redirect(
-      new URL(getRoleDashboard(currentRole), req.nextUrl)
-    )
+    return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
   return NextResponse.next()
