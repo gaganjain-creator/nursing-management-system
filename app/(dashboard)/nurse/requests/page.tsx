@@ -36,7 +36,7 @@ export default async function NurseRequestsPage() {
     }),
   ])
 
-  const serializedRequests = requests.map((r) => ({
+  const serializedRequests = requests.map((r: (typeof requests)[number]) => ({
     ...r,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
@@ -54,7 +54,7 @@ export default async function NurseRequestsPage() {
       : null,
   }))
 
-  const shiftOptions = assignments.map((a) => ({
+  const shiftOptions = assignments.map((a: (typeof assignments)[number]) => ({
     id: a.shiftId,
     date: a.shift.date.toISOString(),
     shiftType: { name: a.shift.shiftType.name },

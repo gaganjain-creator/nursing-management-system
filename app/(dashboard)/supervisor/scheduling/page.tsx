@@ -34,7 +34,7 @@ export default async function SupervisorSchedulingPage() {
     f.units.map((u) => ({ id: u.id, name: u.name, facility: { name: f.name } }))
   )
 
-  const serializedShifts = shifts.map((s) => ({
+  const serializedShifts = shifts.map((s: (typeof shifts)[number]) => ({
     ...s,
     date: s.date.toISOString(),
     startTime: s.startTime.toISOString(),

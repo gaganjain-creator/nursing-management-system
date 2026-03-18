@@ -38,7 +38,7 @@ export default async function NurseAvailabilityPage() {
     orderBy: { date: "asc" },
   })
 
-  const serialized = records.map((r) => ({
+  const serialized = records.map((r: (typeof records)[number]) => ({
     date: r.date.toISOString(),
     isAvailable: r.isAvailable,
   }))

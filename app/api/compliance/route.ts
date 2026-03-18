@@ -39,8 +39,8 @@ export async function GET() {
     orderBy: { fullName: "asc" },
   })
 
-  const rows: NurseComplianceRow[] = profiles.map((profile) => {
-    const docRows = profile.documents.map((doc) => {
+  const rows: NurseComplianceRow[] = profiles.map((profile: (typeof profiles)[number]) => {
+    const docRows = profile.documents.map((doc: (typeof profile.documents)[number]) => {
       const status = getComplianceStatus(doc, doc.documentType)
       return {
         id: doc.id,

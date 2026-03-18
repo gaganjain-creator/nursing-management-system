@@ -18,7 +18,7 @@ async function getComplianceRows(): Promise<NurseComplianceRow[]> {
     orderBy: { fullName: "asc" },
   })
 
-  return profiles.map((profile) => {
+  return profiles.map((profile: (typeof profiles)[number]) => {
     const docRows = profile.documents.map((doc) => ({
       id: doc.id,
       fileName: doc.fileName,

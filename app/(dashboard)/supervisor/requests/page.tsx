@@ -17,7 +17,7 @@ export default async function SupervisorRequestsPage() {
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
   })
 
-  const serialized = requests.map((r) => ({
+  const serialized = requests.map((r: (typeof requests)[number]) => ({
     ...r,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
