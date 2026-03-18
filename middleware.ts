@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
-import { authConfig } from "@/lib/auth.config"
 import { NextResponse } from "next/server"
+import { authConfig } from "./lib/auth.config"
 
 const { auth } = NextAuth(authConfig)
 
@@ -24,29 +24,36 @@ export default auth((req) => {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.nextUrl))
     }
-    return NextResponse.redirect(new URL(getRoleDashboard(role ?? ""), req.nextUrl))
+
+    return NextResponse.redirect(
+      new URL(getRoleDashboard(role ?? ""), req.nextUrl)
+    )
   }
 
-  // Auth pages — redirect to dashboard if already logged in
+  // Auth pages
   if (path === "/login" || path.startsWith("/reset-password")) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL(getRoleDashboard(role ?? ""), req.nextUrl))
+      return NextResponse.redirect(
+        new URL(getRoleDashboard(role ?? ""), req.nextUrl)
+      )
     }
     return NextResponse.next()
   }
 
-  // All other routes require authentication
+  // Require login
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", req.nextUrl)
     loginUrl.searchParams.set("callbackUrl", path)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Role-based route guards
   const currentRole = role ?? ""
 
+  // Role guards
   if (path.startsWith("/admin") && currentRole !== "Admin") {
-    return NextResponse.redirect(new URL(getRoleDashboard(currentRole), req.nextUrl))
+    return NextResponse.redirect(
+      new URL(getRoleDashboard(currentRole), req.nextUrl)
+    )
   }
 
   if (
@@ -54,11 +61,15 @@ export default auth((req) => {
     currentRole !== "Supervisor" &&
     currentRole !== "Admin"
   ) {
-    return NextResponse.redirect(new URL(getRoleDashboard(currentRole), req.nextUrl))
+    return NextResponse.redirect(
+      new URL(getRoleDashboard(currentRole), req.nextUrl)
+    )
   }
 
   if (path.startsWith("/nurse") && currentRole !== "Nurse") {
-    return NextResponse.redirect(new URL(getRoleDashboard(currentRole), req.nextUrl))
+    return NextResponse.redirect(
+      new URL(getRoleDashboard(currentRole), req.nextUrl)
+    )
   }
 
   if (
@@ -66,12 +77,14 @@ export default auth((req) => {
     currentRole !== "Management" &&
     currentRole !== "Admin"
   ) {
-    return NextResponse.redirect(new URL(getRoleDashboard(currentRole), req.nextUrl))
+    return NextResponse.redirect(
+      new URL(getRoleDashboard(currentRole), req.nextUrl)
+    )
   }
 
   return NextResponse.next()
 })
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon\\.ico|public).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

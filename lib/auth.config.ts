@@ -2,16 +2,26 @@ import type { NextAuthConfig } from "next-auth"
 import type { Role } from "@/lib/types"
 
 /**
- * Edge-compatible auth config — no Node.js-only imports (no Prisma, no bcrypt).
- * Used by middleware.ts for JWT verification.
- * The full authorize logic with Prisma lives in lib/auth.ts.
+ * Edge-safe NextAuth configuration
+ * IMPORTANT:
+ * - No Prisma
+ * - No database access
+ * - No bcrypt
+ * This file is used by middleware (Edge runtime)
  */
+
 export const authConfig: NextAuthConfig = {
-  session: { strategy: "jwt", maxAge: 8 * 60 * 60 }, // 8 hours
+  session: {
+    strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 hours
+  },
+
   pages: {
     signIn: "/login",
   },
+
   providers: [],
+
   callbacks: {
     jwt({ token, user }) {
       if (user) {
@@ -20,9 +30,12 @@ export const authConfig: NextAuthConfig = {
       }
       return token
     },
+
     session({ session, token }) {
-      session.user.id = token.id as string
-      session.user.role = token.role as Role
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as Role
+      }
       return session
     },
   },
