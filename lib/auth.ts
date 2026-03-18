@@ -26,8 +26,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = loginSchema.safeParse(credentials)
         if (!parsed.success) return null
 
-        console.log("[auth] login attempt:", parsed.data.email)
-
         let user
         try {
           user = await prisma.user.findUnique({
@@ -37,8 +35,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("[auth] DB error in findUnique:", e)
           return null
         }
-
-        console.log("[auth] user found:", user ? `yes (active=${user.isActive})` : "no")
 
         if (!user) return null
 
@@ -56,8 +52,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("[auth] bcrypt error:", e)
           return null
         }
-
-        console.log("[auth] bcrypt.compare result:", passwordValid)
 
         if (!passwordValid) return null
 

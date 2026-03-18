@@ -72,7 +72,7 @@ export default async function NurseShiftsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assignments.map((a) => (
+              {assignments.map((a: (typeof assignments)[number]) => (
                 <TableRow key={a.id}>
                   <TableCell className="font-medium">{formatDate(a.shift.date)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">

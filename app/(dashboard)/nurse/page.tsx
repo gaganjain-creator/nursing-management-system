@@ -118,7 +118,7 @@ export default async function NurseDashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {nurseProfile.documents.map((doc) => (
+              {nurseProfile.documents.map((doc: (typeof nurseProfile.documents)[number]) => (
                 <li key={doc.id} className="flex items-center justify-between text-sm">
                   <span>{doc.documentType.name} — {doc.fileName}</span>
                   <div className="flex items-center gap-2">

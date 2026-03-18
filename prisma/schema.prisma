@@ -127,6 +127,7 @@ model Document {
   updatedAt      DateTime       @updatedAt
 
   @@index([nurseProfileId, status])
+  @@index([documentTypeId])
 }
 
 model Facility {
@@ -178,6 +179,7 @@ model Shift {
   requests     ShiftRequest[]
 
   @@index([status, date])
+  @@index([unitId])
 }
 
 model ShiftAssignment {
