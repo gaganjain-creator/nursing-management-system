@@ -1,8 +1,5 @@
-import NextAuth from "next-auth"
-import { NextResponse } from "next/server"
-import { authConfig } from "./lib/auth.config"
-
-const { auth } = NextAuth(authConfig)
+import { getToken } from "next-auth/jwt"
+import { NextRequest, NextResponse } from "next/server"
 
 function getRoleDashboard(role?: string) {
   const map: Record<string, string> = {
@@ -15,12 +12,16 @@ function getRoleDashboard(role?: string) {
   return map[role ?? ""] ?? "/login"
 }
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
-  const session = req.auth
-  const isLoggedIn = !!session
-  const role = session?.user?.role
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
+
+  const isLoggedIn = !!token
+  const role = token?.role as string | undefined
 
   // Root redirect
   if (pathname === "/") {
@@ -31,7 +32,7 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
-  // Login / reset pages
+  // Login / reset pages — redirect away if already logged in
   if (pathname.startsWith("/login") || pathname.startsWith("/reset-password")) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
@@ -40,7 +41,7 @@ export default auth((req) => {
     return NextResponse.next()
   }
 
-  // Protected routes
+  // Protected routes — require authentication
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", req.url)
     loginUrl.searchParams.set("callbackUrl", pathname)
@@ -74,7 +75,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
