@@ -11,7 +11,7 @@ const schema = z.object({
   nurseProfileId: z.string().min(1),
   documentTypeId: z.string().min(1),
   contentType: z.enum(ALLOWED_MIME_TYPES, {
-    errorMap: () => ({ message: "Only PDF, JPEG, and PNG files are allowed" }),
+    error: "Only PDF, JPEG, and PNG files are allowed",
   }),
   fileSize: z
     .number()

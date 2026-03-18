@@ -9,7 +9,6 @@ export const adminSession: Session = {
     id: "test-admin-id",
     email: "admin@nms-test.com",
     role: "Admin",
-    name: "Test Admin",
   },
   expires: new Date(Date.now() + 3_600_000).toISOString(),
 }
@@ -19,7 +18,6 @@ export const supervisorSession: Session = {
     id: "test-supervisor-id",
     email: "supervisor@nms-test.com",
     role: "Supervisor",
-    name: "Test Supervisor",
   },
   expires: new Date(Date.now() + 3_600_000).toISOString(),
 }
@@ -29,7 +27,6 @@ export const nurseSession: Session = {
     id: "test-nurse-user-id",
     email: "nurse@nms-test.com",
     role: "Nurse",
-    name: "Test Nurse",
   },
   expires: new Date(Date.now() + 3_600_000).toISOString(),
 }

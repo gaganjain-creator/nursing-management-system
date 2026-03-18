@@ -35,7 +35,7 @@ export default async function AdminAuditLogPage({
     }),
   ])
 
-  const serialized = logs.map((l) => ({
+  const serialized = logs.map((l: (typeof logs)[number]) => ({
     ...l,
     createdAt: l.createdAt.toISOString(),
     oldValues: l.oldValues as Record<string, unknown> | null,
