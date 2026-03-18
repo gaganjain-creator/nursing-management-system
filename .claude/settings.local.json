@@ -13,7 +13,17 @@
       "Bash(npx:*)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx prisma:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(grep -rn \"console\\\\.log\\\\|console\\\\.error\\\\|console\\\\.warn\" D:/nursing-management-system/app D:/nursing-management-system/lib D:/nursing-management-system/components --include=*.ts --include=*.tsx)",
+      "Bash(grep -rn '\\\\.map\\(async \\([a-zA-Z_]\\\\+\\)' D:/nursing-management-system/lib --include=*.ts)",
+      "Bash(grep -n \"Role\\\\|$Enums\" \"D:/nursing-management-system/node_modules/@prisma/client/index.d.ts\")",
+      "Bash(grep -n \"Role\\\\|$Enums\" D:/nursing-management-system/node_modules/.prisma/client/default.d.ts)",
+      "Bash(grep -n \"Role\\\\|$Enums\" \"D:/nursing-management-system/node_modules/.prisma/client/index.d.ts\")",
+      "Bash(sed -i 's|import type { RequestStatus, ShiftRequestType } from \"\"@prisma/client\"\"|import type { RequestStatus, ShiftRequestType } from \"\"@/lib/types\"\"|g' \"D:/nursing-management-system/components/requests/RequestsTableServer.tsx\" \"D:/nursing-management-system/components/requests/NurseRequestsClient.tsx\" \"D:/nursing-management-system/components/requests/RequestsTable.tsx\")",
+      "Bash(sed -i 's|import type { ShiftStatus } from \"\"@prisma/client\"\"|import type { ShiftStatus } from \"\"@/lib/types\"\"|g' \"D:/nursing-management-system/components/scheduling/SchedulingClient.tsx\" \"D:/nursing-management-system/components/scheduling/ShiftTable.tsx\")",
+      "Bash(grep -rn \"\\\\.map\\(\\(.\\\\{1,3\\\\}\\) =>\" \"D:/nursing-management-system/app\" --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -v \"//.*\\\\.map\")",
+      "Bash(grep -rn \"\\\\.\\\\\\(find\\\\|filter\\\\|reduce\\\\|flatMap\\\\\\)\\(\\(.\\\\{1,3\\\\}\\)\" \"D:/nursing-management-system/app\" --include=\"*.tsx\" --include=\"*.ts\")"
     ]
   }
 }
