@@ -18,7 +18,7 @@ async function getProfile(id: string): Promise<Profile | null> {
   if (!profile) return null
 
   const documentsWithUrls = await Promise.all(
-    profile.documents.map(async (doc) => {
+    profile.documents.map(async (doc: (typeof profile.documents)[number]) => {
       const { data } = await getSupabaseServer().storage
         .from(DOCUMENTS_BUCKET)
         .createSignedUrl(doc.storagePath, 3600)

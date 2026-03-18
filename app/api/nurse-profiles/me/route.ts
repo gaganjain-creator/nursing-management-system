@@ -25,7 +25,7 @@ export async function GET() {
 
   const supabase = getSupabaseServer()
   const documentsWithUrls = await Promise.all(
-    profile.documents.map(async (doc) => {
+    profile.documents.map(async (doc: (typeof profile.documents)[number]) => {
       const { data } = await supabase.storage
         .from(DOCUMENTS_BUCKET)
         .createSignedUrl(doc.storagePath, 3600)
