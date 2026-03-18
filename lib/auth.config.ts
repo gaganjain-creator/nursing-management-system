@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from "next-auth"
-import type { Role } from "@prisma/client"
+import type { Role } from "@/lib/types"
 
 /**
  * Edge-compatible auth config — no Node.js-only imports (no Prisma, no bcrypt).

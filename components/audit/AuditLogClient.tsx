@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { formatDateTime } from "@/lib/utils"
-import type { Role } from "@prisma/client"
+import type { Role } from "@/lib/types"
 
 interface AuditLogEntry {
   id: string

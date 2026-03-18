@@ -20,7 +20,7 @@ import {
 import { signOut } from "next-auth/react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import type { Role } from "@prisma/client"
+import type { Role } from "@/lib/types"
 
 interface NavItem {
   label: string

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { RequestsTable } from "./RequestsTable"
-import type { RequestStatus, ShiftRequestType } from "@prisma/client"
+import type { RequestStatus, ShiftRequestType } from "@/lib/types"
 
 interface RequestRow {
   id: string

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/utils"
-import type { ShiftStatus } from "@prisma/client"
+import type { ShiftStatus } from "@/lib/types"
 
 interface ShiftRow {
   id: string

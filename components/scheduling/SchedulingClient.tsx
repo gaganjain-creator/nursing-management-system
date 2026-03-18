@@ -5,7 +5,7 @@ import { ShiftTable } from "./ShiftTable"
 import { CreateShiftModal } from "./CreateShiftModal"
 import { AssignNurseModal } from "./AssignNurseModal"
 import { Select } from "@/components/ui/select"
-import type { ShiftStatus } from "@prisma/client"
+import type { ShiftStatus } from "@/lib/types"
 
 interface Unit {
   id: string

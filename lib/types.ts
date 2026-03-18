@@ -1,0 +1,7 @@
+export type Role = "Admin" | "Supervisor" | "Nurse" | "Management"
+export type EmploymentType = "FullTime" | "PartTime" | "Agency"
+export type NurseStatus = "Active" | "Inactive" | "PendingReview"
+export type DocumentStatus = "Compliant" | "ExpiringSoon" | "NonCompliant"
+export type ShiftStatus = "Open" | "Assigned" | "Completed" | "Cancelled"
+export type ShiftRequestType = "SwapRequest" | "TimeOff"
+export type RequestStatus = "Pending" | "Approved" | "Rejected"

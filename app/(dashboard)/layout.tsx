@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { Sidebar } from "@/components/shared/Sidebar"
 import { Header } from "@/components/shared/Header"
-import type { Role } from "@prisma/client"
+import type { Role } from "@/lib/types"
 
 export default async function DashboardLayout({
   children,
