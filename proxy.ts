@@ -12,7 +12,7 @@ function getRoleDashboard(role?: string) {
   return map[role ?? ""] ?? "/login"
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
   const token = await getToken({
