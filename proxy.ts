@@ -15,20 +15,24 @@ function getRoleDashboard(role?: string) {
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  })
+  let token = null
+  try {
+    token = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    })
+  } catch {
+    // Token decode failed — treat as unauthenticated
+  }
 
   const isLoggedIn = !!token
-  const role = token?.role as string | undefined
+  const role = (token?.role ?? "") as string
 
   // Root redirect
   if (pathname === "/") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.url))
     }
-
     return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
   }
 
@@ -37,7 +41,6 @@ export async function proxy(req: NextRequest) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(getRoleDashboard(role), req.url))
     }
-
     return NextResponse.next()
   }
 
@@ -45,7 +48,6 @@ export async function proxy(req: NextRequest) {
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", req.url)
     loginUrl.searchParams.set("callbackUrl", pathname)
-
     return NextResponse.redirect(loginUrl)
   }
 
