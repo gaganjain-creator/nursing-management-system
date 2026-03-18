@@ -12,7 +12,8 @@
       "Bash(npx next:*)",
       "Bash(npx:*)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx prisma:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npm test:*)"
     ]
   }
 }

@@ -18,8 +18,8 @@ async function getComplianceRows(): Promise<NurseComplianceRow[]> {
     orderBy: { fullName: "asc" },
   })
 
-  return profiles.map((profile: (typeof profiles)[number]) => {
-    const docRows = profile.documents.map((doc: (typeof profile.documents)[number]) => ({
+  return profiles.map((profile) => {
+    const docRows: NurseComplianceRow["documents"] = profile.documents.map((doc) => ({
       id: doc.id,
       fileName: doc.fileName,
       documentTypeName: doc.documentType.name,
@@ -29,7 +29,9 @@ async function getComplianceRows(): Promise<NurseComplianceRow[]> {
     }))
 
     const overallStatus =
-      docRows.length > 0 ? getWorstStatus(docRows.map((d) => d.status)) : "Compliant" as const
+      docRows.length > 0
+        ? getWorstStatus(docRows.map((d) => d.status))
+        : ("Compliant" as const)
 
     return {
       nurseId: profile.id,
@@ -47,6 +49,7 @@ interface PageProps {
 
 export default async function AdminCompliancePage({ searchParams }: PageProps) {
   const session = await auth()
+
   if (!session?.user) redirect("/login")
   if (session.user.role !== "Admin") redirect("/")
 
@@ -56,14 +59,20 @@ export default async function AdminCompliancePage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Compliance Overview</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Compliance Overview
+        </h1>
         <p className="text-muted-foreground">
           Document compliance status for all active nurses.
           {status && (
-            <> Filtered by: <strong>{status}</strong></>
+            <>
+              {" "}
+              Filtered by: <strong>{status}</strong>
+            </>
           )}
         </p>
       </div>
+
       <ComplianceTable rows={rows} filterStatus={status} />
     </div>
   )
