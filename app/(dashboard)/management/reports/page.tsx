@@ -29,8 +29,8 @@ export default async function ManagementReportsPage() {
     }),
   ])
 
-  const compliantDocs = docsByStatus.find((d) => d.status === "Compliant")?._count ?? 0
-  const nonCompliantDocs = docsByStatus.filter((d) => d.status !== "Compliant").reduce((s, d) => s + d._count, 0)
+  const compliantDocs = docsByStatus.find((d: (typeof docsByStatus)[number]) => d.status === "Compliant")?._count ?? 0
+  const nonCompliantDocs = docsByStatus.filter((d: (typeof docsByStatus)[number]) => d.status !== "Compliant").reduce((s, d: (typeof docsByStatus)[number]) => s + d._count, 0)
   const complianceRate =
     compliantDocs + nonCompliantDocs > 0
       ? Math.round((compliantDocs / (compliantDocs + nonCompliantDocs)) * 100)
@@ -55,7 +55,7 @@ export default async function ManagementReportsPage() {
               <p className="text-2xl font-bold">{totalNurses}</p>
             </CardContent>
           </Card>
-          {nursesByStatus.map((s) => (
+          {nursesByStatus.map((s: (typeof nursesByStatus)[number]) => (
             <Card key={s.status}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{s.status}</CardTitle>
@@ -67,7 +67,7 @@ export default async function ManagementReportsPage() {
           ))}
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          {nursesByType.map((t) => (
+          {nursesByType.map((t: (typeof nursesByType)[number]) => (
             <Card key={t.employmentType}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.employmentType}</CardTitle>
@@ -92,7 +92,7 @@ export default async function ManagementReportsPage() {
               <p className="text-2xl font-bold">{complianceRate}%</p>
             </CardContent>
           </Card>
-          {docsByStatus.map((d) => (
+          {docsByStatus.map((d: (typeof docsByStatus)[number]) => (
             <Card key={d.status}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{d.status}</CardTitle>
@@ -109,7 +109,7 @@ export default async function ManagementReportsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Shifts</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {shiftsByStatus.map((s) => (
+          {shiftsByStatus.map((s: (typeof shiftsByStatus)[number]) => (
             <Card key={s.status}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{s.status}</CardTitle>
@@ -126,7 +126,7 @@ export default async function ManagementReportsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Shift Requests</h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          {requestsByStatus.map((r) => (
+          {requestsByStatus.map((r: (typeof requestsByStatus)[number]) => (
             <Card key={r.status}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{r.status}</CardTitle>
