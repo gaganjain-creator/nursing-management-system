@@ -19,7 +19,7 @@ async function getComplianceRows(): Promise<NurseComplianceRow[]> {
   })
 
   return profiles.map((profile: (typeof profiles)[number]) => {
-    const docRows = profile.documents.map((doc) => ({
+    const docRows = profile.documents.map((doc: (typeof profile.documents)[number]) => ({
       id: doc.id,
       fileName: doc.fileName,
       documentTypeName: doc.documentType.name,

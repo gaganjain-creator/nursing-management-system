@@ -30,8 +30,8 @@ export default async function AdminSchedulingPage() {
     }),
   ])
 
-  const units = facilities.flatMap((f) =>
-    f.units.map((u) => ({ id: u.id, name: u.name, facility: { name: f.name } }))
+  const units = facilities.flatMap((f: (typeof facilities)[number]) =>
+    f.units.map((u: (typeof f.units)[number]) => ({ id: u.id, name: u.name, facility: { name: f.name } }))
   )
 
   const serializedShifts = shifts.map((s: (typeof shifts)[number]) => ({

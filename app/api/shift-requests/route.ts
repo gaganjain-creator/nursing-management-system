@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       select: { id: true },
     })
     await tx.notification.createMany({
-      data: supervisors.map((u) => ({
+      data: supervisors.map((u: (typeof supervisors)[number]) => ({
         userId: u.id,
         type: "SHIFT_REQUEST",
         title: "New Shift Request",
